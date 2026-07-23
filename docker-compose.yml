@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      MOCK_API_URL: http://mock_api:5001/appointments
+    depends_on:
+      - mock_api
+
+  mock_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock
+    ports:
+      - "5001:5001"

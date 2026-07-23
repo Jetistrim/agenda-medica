@@ -1,0 +1,18 @@
+<type>(<scope>): <short summary>
+
+Context:
+- Why is this change needed?
+- What user or technical problem does it solve?
+
+Changes:
+-
+-
+
+Validation:
+- [ ] pytest
+- [ ] manual check
+- [ ] docker-compose up --build
+
+Notes:
+- Risks:
+- Follow-up:

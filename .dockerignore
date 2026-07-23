@@ -1,0 +1,13 @@
+.git
+.github
+__pycache__
+.pytest_cache
+.venv
+venv
+*.pyc
+*.pyo
+*.pyd
+*.db
+instance
+.env
+manual_check_phase1.py

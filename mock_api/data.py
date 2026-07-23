@@ -1,0 +1,32 @@
+APPOINTMENTS = [
+    {
+        "data": "2026-07-22",
+        "horario": "09:00",
+        "paciente": "Ana Souza",
+        "cpf": "11122233344",
+        "medico": "Dr. Carlos Lima",
+        "especialidade": "Cardiologia",
+        "convenio": "VidaSaude",
+        "status": "Confirmado",
+    },
+    {
+        "data": "2026-07-22",
+        "horario": "10:30",
+        "paciente": "Bruno Alves",
+        "cpf": "55566677788",
+        "medico": "Dra. Marina Costa",
+        "especialidade": "Pediatria",
+        "convenio": "ClinMais",
+        "status": "Pendente",
+    },
+    {
+        "data": "2026-07-22",
+        "horario": "14:00",
+        "paciente": "Carla Mendes",
+        "cpf": "99988877766",
+        "medico": "Dr. Felipe Rocha",
+        "especialidade": "Dermatologia",
+        "convenio": "SaudePrime",
+        "status": "Confirmado",
+    },
+]

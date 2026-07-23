@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda Medica - Login</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232563eb'/%3E%3C/svg%3E">
+  <style>
+    body { font-family: "Segoe UI", Tahoma, sans-serif; background: #f5f7fb; margin: 0; }
+    .container { max-width: 420px; margin: 80px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; color: #1a365d; }
+    label { display: block; margin-top: 14px; font-weight: 600; }
+    input { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; }
+    button { margin-top: 18px; width: 100%; padding: 11px; background: #2563eb; color: #fff; border: 0; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .flash { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; padding: 10px; border-radius: 8px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Agenda Medica</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('auth.login') }}">
+      {{ form.hidden_tag() }}
+      <label for="login">Usuario ou e-mail</label>
+      {{ form.login(id='login') }}
+
+      <label for="password">Senha</label>
+      {{ form.password(id='password') }}
+
+      {{ form.submit() }}
+    </form>
+  </div>
+</body>
+</html>

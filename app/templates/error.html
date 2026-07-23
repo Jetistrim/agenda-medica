@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda Medica - Erro</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232563eb'/%3E%3C/svg%3E">
+  <style>
+    body { margin: 0; background: #f8fafc; font-family: "Segoe UI", Tahoma, sans-serif; }
+    .box { max-width: 520px; margin: 90px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 10px 26px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px 0; color: #1e293b; }
+    p { color: #475569; }
+    a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Algo deu errado</h1>
+    <p>{{ message }}</p>
+    <a href="{{ url_for('auth.login') }}">Voltar para login</a>
+  </div>
+</body>
+</html>
