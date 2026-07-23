@@ -26,6 +26,15 @@ docker-compose up --build
 - Usuario: valor definido em TEST_USER_LOGIN no arquivo .env
 - Senha: valor definido em TEST_USER_PASSWORD no arquivo .env
 
+## Exemplos de uso
+- Login valido: acesse /login, informe usuario e senha corretos, e voce sera redirecionado para a agenda.
+- Busca na tabela: na tela principal, digite parte do nome do paciente, CPF ou medico para filtrar os agendamentos.
+- Sem resultados: ao filtrar sem correspondencia, a interface exibe "Nenhum registro encontrado para esta busca.".
+
+## Volume de dados mockados
+- O endpoint da mock API fornece 50 exemplos de agendamentos gerados de forma deterministica.
+- A tabela usa paginacao local com tamanhos de pagina modulaveis: 10, 25 e 50 linhas.
+
 ## Executar sem Docker
 1. Crie e ative um ambiente virtual.
 2. Instale dependencias:
@@ -41,19 +50,19 @@ pip install -r requirements.txt
 python seed.py
 ```
 
-5. Execute app:
+5. Em outro terminal, suba a mock API:
+
+```bash
+python -m mock_api.app
+```
+
+6. Execute a aplicacao Flask:
 
 ```bash
 flask run
 ```
 
-## Decisoes tecnicas
-- Mock API separada para simular servico externo de agendamentos.
-- Senhas armazenadas somente em hash com werkzeug.security.
-- Usuario inicial carregado de variaveis TEST_USER_* para evitar credenciais hardcoded em Python.
-- Tabela no frontend com Tabulator 6.3.0 versionado localmente em static/vendor para busca e filtragem rapidas.
-
 ## Limitacoes conhecidas
-- Sem HTTPS na execucao local.
-- SQLite nao e ideal para alta concorrencia.
-- Sessao Flask local sem armazenamento distribuido.
+- SQLite não é ideal para alta concorrencia.
+- Sessão Flask local sem armazenamento distribuido.
+- Falta de inicialização sem docker unificada.
