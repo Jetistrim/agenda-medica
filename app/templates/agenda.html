@@ -8,17 +8,197 @@
   <link href="{{ url_for('static', filename='vendor/tabulator/tabulator.min.css') }}" rel="stylesheet">
   <script src="{{ url_for('static', filename='vendor/tabulator/tabulator.min.js') }}"></script>
   <style>
-    body { margin: 0; background: #eef2ff; font-family: "Segoe UI", Tahoma, sans-serif; }
-    .shell { max-width: 1200px; margin: 28px auto; background: #fff; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,.08); padding: 20px; }
+    :root {
+      --surface-page: #eef2ff;
+      --surface-card: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-soft-2: #f5f3ff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --brand: #7c3aed;
+      --brand-strong: #6d28d9;
+      --brand-soft: #ede9fe;
+      --border-default: #e2e8f0;
+      --border-strong: #ddd6fe;
+      --danger: #e11d48;
+    }
+
+    body { margin: 0; background: var(--surface-page); font-family: "Segoe UI", Tahoma, sans-serif; color: var(--text-main); }
+    .shell { max-width: 1200px; margin: 28px auto; background: var(--surface-card); border-radius: 14px; box-shadow: 0 18px 40px rgba(15, 23, 42, .10); padding: 20px; }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .title { color: #1e3a8a; margin: 0; }
     .controls { display: flex; gap: 10px; width: 100%; margin-top: 16px; }
-    .controls input { flex: 1; padding: 10px; border: 1px solid #bfdbfe; border-radius: 8px; }
-    .logout { padding: 9px 12px; border: 0; border-radius: 8px; background: #e11d48; color: #fff; cursor: pointer; text-decoration: none; }
+    .controls input {
+      flex: 1;
+      padding: 11px 12px;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: #fff;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .controls input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, .15);
+    }
+    .filter-toggle {
+      border: 2px solid var(--border-strong);
+      color: var(--brand);
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .filter-toggle:hover { background: var(--surface-soft-2); }
+    .filter-toggle.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #fff;
+      border-color: #8b5cf6;
+      box-shadow: 0 8px 18px rgba(124, 58, 237, .28);
+    }
+    .logout { padding: 9px 12px; border: 0; border-radius: 8px; background: var(--danger); color: #fff; cursor: pointer; text-decoration: none; }
     .banner { display: none; margin-top: 12px; padding: 10px; border-radius: 8px; }
     .banner.error { background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239; }
     .inline-note { margin-top: 10px; color: #475569; font-size: 14px; display: none; }
+    .filter-panel {
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--border-default);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--surface-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+    }
+    .filter-panel.open { display: grid; grid-template-columns: 270px 1fr; }
+    .filter-sidebar {
+      border-right: 1px solid var(--border-default);
+      background: linear-gradient(180deg, #fcfbff 0%, #ffffff 100%);
+      padding: 14px 12px;
+    }
+    .filter-sidebar-title {
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .filter-categories { display: flex; flex-direction: column; gap: 8px; }
+    .category-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #334155;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: all .2s ease;
+    }
+    .category-item:hover {
+      background: var(--surface-soft);
+      border-color: var(--border-default);
+    }
+    .category-item.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(124, 58, 237, .24);
+    }
+    .category-count { min-width: 22px; text-align: center; border-radius: 999px; font-size: 12px; padding: 2px 6px; background: rgba(99, 102, 241, .14); color: #4338ca; }
+    .category-item.active .category-count { background: rgba(255,255,255,.2); color: #fff; }
+    .filter-content { padding: 18px; background: #fff; }
+    .filter-context {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+    .filter-context-label {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    .filter-context-tip {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .filter-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .filter-search-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .filter-search-wrap input { width: 100%; border: 0; outline: none; padding: 10px 12px; font-size: 15px; }
+    .filter-search-wrap:focus-within {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, .12);
+    }
+    .filter-search-icon { padding: 0 12px; color: #64748b; font-size: 18px; }
+    .filter-clear {
+      border: 1px solid var(--border-strong);
+      background: #fff;
+      color: var(--brand);
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 8px 12px;
+      transition: all .2s ease;
+    }
+    .filter-clear:hover { background: var(--surface-soft-2); }
+    .filter-options {
+      margin-top: 18px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: grid;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .option-item { display: flex; align-items: center; gap: 10px; border: 1px solid transparent; border-radius: 8px; padding: 8px; }
+    .option-item:hover { background: var(--surface-soft); border-color: var(--border-default); }
+    .option-item input { width: 16px; height: 16px; accent-color: #7c3aed; }
+    .option-label { color: #334155; }
+    .option-empty { color: #64748b; font-size: 14px; }
+
+    .date-filter { margin-top: 12px; display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
+    .date-presets { display: grid; gap: 8px; align-content: start; }
+    .date-preset-item { display: flex; align-items: center; gap: 10px; color: #1e293b; font-weight: 600; cursor: pointer; }
+    .date-preset-item input { width: 18px; height: 18px; accent-color: #7c3aed; }
+    .date-calendar { border-left: 1px solid var(--border-default); padding-left: 16px; }
+    .date-calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .date-calendar-title { color: #334155; font-weight: 700; }
+    .date-nav-group { display: flex; gap: 8px; }
+    .date-nav { border: 1px solid var(--border-strong); background: #fff; color: var(--brand); border-radius: 8px; padding: 4px 8px; cursor: pointer; font-weight: 700; }
+    .date-nav:hover { background: var(--surface-soft-2); }
+    .date-weekdays, .date-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+    .date-weekday { font-size: 12px; color: #475569; text-align: center; padding: 4px 0; font-weight: 700; }
+    .date-day { border: 1px solid transparent; border-radius: 8px; background: #fff; color: #0f172a; height: 34px; cursor: pointer; font-weight: 600; transition: all .16s ease; }
+    .date-day:hover { border-color: var(--border-strong); background: var(--surface-soft-2); }
+    .date-day.other-month { color: #94a3b8; }
+    .date-day.today { box-shadow: inset 0 0 0 1px rgba(124, 58, 237, .35); }
+    .date-day.in-range { background: var(--brand-soft); color: var(--brand-strong); }
+    .date-day.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
+
     #appointments-table { margin-top: 14px; }
+
+    @media (max-width: 860px) {
+      .filter-panel.open { grid-template-columns: 1fr; }
+      .filter-sidebar { border-right: 0; border-bottom: 1px solid var(--border-default); }
+      .date-filter { grid-template-columns: 1fr; }
+      .date-calendar { border-left: 0; border-top: 1px solid var(--border-default); padding-left: 0; padding-top: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -30,7 +210,29 @@
     </div>
 
     <div class="controls">
+      <button id="filter-toggle" type="button" class="filter-toggle">+ Adicionar filtro</button>
       <input id="search" type="text" placeholder="Buscar por paciente, CPF ou medico">
+    </div>
+
+    <div id="filter-panel" class="filter-panel">
+      <aside class="filter-sidebar">
+        <p class="filter-sidebar-title">Categorias</p>
+        <div id="filter-categories" class="filter-categories"></div>
+      </aside>
+      <section class="filter-content">
+        <div class="filter-context">
+          <h2 id="filter-context-label" class="filter-context-label">Filtro: Tipos</h2>
+          <p class="filter-context-tip">Combine categorias para refinar a agenda</p>
+        </div>
+        <div class="filter-header">
+          <div class="filter-search-wrap">
+            <input id="option-search" type="text" placeholder="Digite">
+            <span class="filter-search-icon">⌕</span>
+          </div>
+          <button id="filter-clear" type="button" class="filter-clear">Limpar</button>
+        </div>
+        <div id="filter-options" class="filter-options"></div>
+      </section>
     </div>
 
     <div id="banner" class="banner error"></div>
@@ -40,13 +242,60 @@
 
   <script>
     const searchInput = document.getElementById("search");
+    const filterToggle = document.getElementById("filter-toggle");
+    const filterPanel = document.getElementById("filter-panel");
+    const filterCategories = document.getElementById("filter-categories");
+    const filterOptions = document.getElementById("filter-options");
+    const optionSearchInput = document.getElementById("option-search");
+    const optionSearchWrap = document.querySelector(".filter-search-wrap");
+    const filterContextLabel = document.getElementById("filter-context-label");
+    const filterClearButton = document.getElementById("filter-clear");
     const banner = document.getElementById("banner");
     const noResults = document.getElementById("no-results");
+
+    const filterDefinitions = [
+      { field: "especialidade", label: "Tipos" },
+      { field: "status", label: "Status" },
+      { field: "convenio", label: "Convenio" },
+      { field: "medico", label: "Medico" },
+      { field: "data", label: "Data" },
+    ];
+
+    let activeCategory = filterDefinitions[0].field;
+    let appointmentsSource = [];
+    const optionsByField = new Map();
+    const selectedByField = new Map(
+      filterDefinitions
+        .filter(({ field }) => field !== "data")
+        .map(({ field }) => [field, new Set()])
+    );
+
+    const now = new Date();
+    const dateFilterState = {
+      presetKey: null,
+      startDate: null,
+      endDate: null,
+      viewYear: now.getFullYear(),
+      viewMonth: now.getMonth(),
+    };
+
+    const DATE_PRESETS = [
+      { key: "custom", label: "Periodo variavel" },
+      { key: "today", label: "Hoje" },
+      { key: "week", label: "Esta semana" },
+      { key: "month", label: "Este mes" },
+      { key: "last7", label: "Ultimos 7 dias" },
+      { key: "last30", label: "Ultimos 30 dias" },
+    ];
 
     const table = new Tabulator("#appointments-table", {
       data: [],
       layout: "fitColumns",
       placeholder: "Nenhum agendamento encontrado.",
+      pagination: "local",
+      paginationSize: 10,
+      paginationSizeSelector: [10, 25, 50],
+      paginationCounter: "rows",
       columns: [
         { title: "Data", field: "data" },
         { title: "Horario", field: "horario" },
@@ -69,8 +318,394 @@
       banner.textContent = "";
     }
 
+    function hasActiveFilters() {
+      return Array.from(selectedByField.values()).some((values) => values.size > 0)
+        || getDateFilterCount() > 0;
+    }
+
     function updateNoResultsState() {
-      noResults.style.display = table.getDataCount("active") === 0 && searchInput.value.trim() ? "block" : "none";
+      const hasSearchTerm = !!searchInput.value.trim();
+      const shouldShow = table.getDataCount("active") === 0 && (hasSearchTerm || hasActiveFilters());
+      noResults.style.display = shouldShow ? "block" : "none";
+    }
+
+    function buildOptionsMap(appointments) {
+      const nextMap = new Map();
+      filterDefinitions.forEach(({ field }) => {
+        if (field === "data") {
+          return;
+        }
+        const values = new Set();
+        appointments.forEach((item) => {
+          const value = item[field];
+          if (value) {
+            values.add(String(value));
+          }
+        });
+        nextMap.set(field, Array.from(values).sort((left, right) => left.localeCompare(right)));
+      });
+      return nextMap;
+    }
+
+    function formatDateISO(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTodayDate() {
+      const reference = new Date();
+      return new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
+    }
+
+    function getPresetRange(key) {
+      const today = getTodayDate();
+      if (key === "today") {
+        const iso = formatDateISO(today);
+        return { start: iso, end: iso };
+      }
+      if (key === "week") {
+        const weekday = today.getDay();
+        const start = new Date(today);
+        start.setDate(today.getDate() - weekday);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        return { start: formatDateISO(start), end: formatDateISO(end) };
+      }
+      if (key === "month") {
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return { start: formatDateISO(start), end: formatDateISO(end) };
+      }
+      if (key === "last7") {
+        const start = new Date(today);
+        start.setDate(today.getDate() - 6);
+        return { start: formatDateISO(start), end: formatDateISO(today) };
+      }
+      if (key === "last30") {
+        const start = new Date(today);
+        start.setDate(today.getDate() - 29);
+        return { start: formatDateISO(start), end: formatDateISO(today) };
+      }
+      return null;
+    }
+
+    function getActiveDateRange() {
+      if (!dateFilterState.presetKey) {
+        return null;
+      }
+
+      if (dateFilterState.presetKey === "custom") {
+        if (!dateFilterState.startDate || !dateFilterState.endDate) {
+          return null;
+        }
+        return {
+          start: dateFilterState.startDate < dateFilterState.endDate
+            ? dateFilterState.startDate
+            : dateFilterState.endDate,
+          end: dateFilterState.startDate < dateFilterState.endDate
+            ? dateFilterState.endDate
+            : dateFilterState.startDate,
+        };
+      }
+
+      return getPresetRange(dateFilterState.presetKey);
+    }
+
+    function getDateFilterCount() {
+      return getActiveDateRange() ? 1 : 0;
+    }
+
+    function moveCalendarMonth(step) {
+      const nextMonth = dateFilterState.viewMonth + step;
+      if (nextMonth < 0) {
+        dateFilterState.viewMonth = 11;
+        dateFilterState.viewYear -= 1;
+      } else if (nextMonth > 11) {
+        dateFilterState.viewMonth = 0;
+        dateFilterState.viewYear += 1;
+      } else {
+        dateFilterState.viewMonth = nextMonth;
+      }
+      renderOptions();
+    }
+
+    function createCalendarDaysGrid() {
+      const grid = [];
+      const firstDay = new Date(dateFilterState.viewYear, dateFilterState.viewMonth, 1);
+      const startWeekday = firstDay.getDay();
+      const startDate = new Date(dateFilterState.viewYear, dateFilterState.viewMonth, 1 - startWeekday);
+
+      for (let offset = 0; offset < 42; offset += 1) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + offset);
+        grid.push(currentDate);
+      }
+
+      return grid;
+    }
+
+    function pickCustomDate(isoDate) {
+      dateFilterState.presetKey = "custom";
+      if (!dateFilterState.startDate || (dateFilterState.startDate && dateFilterState.endDate)) {
+        dateFilterState.startDate = isoDate;
+        dateFilterState.endDate = isoDate;
+      } else {
+        dateFilterState.endDate = isoDate;
+      }
+      renderCategories();
+      renderOptions();
+      applyFilters();
+    }
+
+    function renderDateOptions() {
+      const monthNames = [
+        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+      ];
+      const weekdays = ["D", "S", "T", "Q", "Q", "S", "S"];
+      const activeRange = getActiveDateRange();
+      const todayIso = formatDateISO(getTodayDate());
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "date-filter";
+
+      const presets = document.createElement("div");
+      presets.className = "date-presets";
+      DATE_PRESETS.forEach(({ key, label }) => {
+        const row = document.createElement("label");
+        row.className = "date-preset-item";
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "date-preset";
+        radio.checked = dateFilterState.presetKey === key;
+        radio.addEventListener("change", () => {
+          dateFilterState.presetKey = key;
+          if (key !== "custom") {
+            dateFilterState.startDate = null;
+            dateFilterState.endDate = null;
+          }
+          renderCategories();
+          renderOptions();
+          applyFilters();
+        });
+
+        const text = document.createElement("span");
+        text.textContent = label;
+
+        row.appendChild(radio);
+        row.appendChild(text);
+        presets.appendChild(row);
+      });
+
+      const calendar = document.createElement("div");
+      calendar.className = "date-calendar";
+
+      const header = document.createElement("div");
+      header.className = "date-calendar-header";
+
+      const title = document.createElement("div");
+      title.className = "date-calendar-title";
+      title.textContent = `${monthNames[dateFilterState.viewMonth]} ${dateFilterState.viewYear}`;
+
+      const nav = document.createElement("div");
+      nav.className = "date-nav-group";
+
+      const prev = document.createElement("button");
+      prev.type = "button";
+      prev.className = "date-nav";
+      prev.textContent = "<";
+      prev.addEventListener("click", () => moveCalendarMonth(-1));
+
+      const next = document.createElement("button");
+      next.type = "button";
+      next.className = "date-nav";
+      next.textContent = ">";
+      next.addEventListener("click", () => moveCalendarMonth(1));
+
+      nav.appendChild(prev);
+      nav.appendChild(next);
+
+      header.appendChild(title);
+      header.appendChild(nav);
+
+      const weekdaysRow = document.createElement("div");
+      weekdaysRow.className = "date-weekdays";
+      weekdays.forEach((weekdayLabel) => {
+        const weekday = document.createElement("div");
+        weekday.className = "date-weekday";
+        weekday.textContent = weekdayLabel;
+        weekdaysRow.appendChild(weekday);
+      });
+
+      const grid = document.createElement("div");
+      grid.className = "date-grid";
+      createCalendarDaysGrid().forEach((dayDate) => {
+        const dayButton = document.createElement("button");
+        dayButton.type = "button";
+        dayButton.className = "date-day";
+        dayButton.textContent = String(dayDate.getDate());
+
+        const dayIso = formatDateISO(dayDate);
+        const isOtherMonth = dayDate.getMonth() !== dateFilterState.viewMonth;
+        if (isOtherMonth) {
+          dayButton.classList.add("other-month");
+        }
+
+        if (dayIso === todayIso) {
+          dayButton.classList.add("today");
+        }
+
+        if (activeRange && dayIso >= activeRange.start && dayIso <= activeRange.end) {
+          dayButton.classList.add("in-range");
+          if (dayIso === activeRange.start || dayIso === activeRange.end) {
+            dayButton.classList.add("selected");
+          }
+        }
+
+        dayButton.addEventListener("click", () => pickCustomDate(dayIso));
+        grid.appendChild(dayButton);
+      });
+
+      calendar.appendChild(header);
+      calendar.appendChild(weekdaysRow);
+      calendar.appendChild(grid);
+
+      wrapper.appendChild(presets);
+      wrapper.appendChild(calendar);
+
+      filterOptions.appendChild(wrapper);
+    }
+
+    function renderCategories() {
+      filterCategories.innerHTML = "";
+      filterDefinitions.forEach(({ field, label }) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `category-item${field === activeCategory ? " active" : ""}`;
+        button.dataset.field = field;
+
+        const title = document.createElement("span");
+        title.textContent = label;
+
+        const count = document.createElement("span");
+        count.className = "category-count";
+        count.textContent = field === "data"
+          ? String(getDateFilterCount())
+          : String(selectedByField.get(field).size);
+
+        button.appendChild(title);
+        button.appendChild(count);
+        button.addEventListener("click", () => {
+          activeCategory = field;
+          optionSearchInput.value = "";
+          renderCategories();
+          renderOptions();
+        });
+        filterCategories.appendChild(button);
+      });
+
+      const activeDefinition = filterDefinitions.find(({ field }) => field === activeCategory);
+      filterContextLabel.textContent = `Filtro: ${activeDefinition ? activeDefinition.label : "Itens"}`;
+    }
+
+    function renderOptions() {
+      if (activeCategory === "data") {
+        optionSearchWrap.style.display = "none";
+        filterOptions.innerHTML = "";
+        renderDateOptions();
+        return;
+      }
+
+      optionSearchWrap.style.display = "flex";
+      const categoryOptions = optionsByField.get(activeCategory) || [];
+      const selectedValues = selectedByField.get(activeCategory);
+      const searchTerm = optionSearchInput.value.trim().toLowerCase();
+
+      const filteredOptions = categoryOptions.filter((option) => option.toLowerCase().includes(searchTerm));
+      filterOptions.innerHTML = "";
+
+      if (!filteredOptions.length) {
+        const empty = document.createElement("div");
+        empty.className = "option-empty";
+        empty.textContent = "Nenhuma opcao para o filtro selecionado.";
+        filterOptions.appendChild(empty);
+        return;
+      }
+
+      filteredOptions.forEach((optionValue) => {
+        const row = document.createElement("label");
+        row.className = "option-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = selectedValues.has(optionValue);
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            selectedValues.add(optionValue);
+          } else {
+            selectedValues.delete(optionValue);
+          }
+          renderCategories();
+          applyFilters();
+        });
+
+        const text = document.createElement("span");
+        text.className = "option-label";
+        text.textContent = optionValue;
+
+        row.appendChild(checkbox);
+        row.appendChild(text);
+        filterOptions.appendChild(row);
+      });
+    }
+
+    function applyFilters() {
+      const term = searchInput.value.trim().toLowerCase();
+      table.setFilter((rowData) => {
+        if (term) {
+          const matchesTerm = [rowData.paciente, rowData.cpf, rowData.medico]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(term));
+          if (!matchesTerm) {
+            return false;
+          }
+        }
+
+        for (const [field, values] of selectedByField.entries()) {
+          if (values.size === 0) {
+            continue;
+          }
+          if (!values.has(String(rowData[field] || ""))) {
+            return false;
+          }
+        }
+
+        const activeDateRange = getActiveDateRange();
+        if (activeDateRange) {
+          const rowDate = String(rowData.data || "");
+          if (!rowDate || rowDate < activeDateRange.start || rowDate > activeDateRange.end) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+      table.setPage(1);
+      updateNoResultsState();
+    }
+
+    function clearAllFilters() {
+      selectedByField.forEach((values) => values.clear());
+      dateFilterState.presetKey = null;
+      dateFilterState.startDate = null;
+      dateFilterState.endDate = null;
+      optionSearchInput.value = "";
+      renderCategories();
+      renderOptions();
+      applyFilters();
     }
 
     async function loadAppointments() {
@@ -82,35 +717,54 @@
 
         if (payload.error && payload.error !== "NO_RESULTS") {
           showBanner(payload.message || "Erro ao carregar agendamentos.");
-          table.setData(payload.data || []);
+          appointmentsSource = payload.data || [];
+          table.setData(appointmentsSource);
+          optionsByField.clear();
+          buildOptionsMap(appointmentsSource).forEach((value, key) => optionsByField.set(key, value));
+          renderCategories();
+          renderOptions();
           updateNoResultsState();
           return;
         }
 
         hideBanner();
-        table.setData(payload.data || []);
-        updateNoResultsState();
+        appointmentsSource = payload.data || [];
+        table.setData(appointmentsSource);
+        optionsByField.clear();
+        buildOptionsMap(appointmentsSource).forEach((value, key) => optionsByField.set(key, value));
+        renderCategories();
+        renderOptions();
+        applyFilters();
       } catch (error) {
         showBanner("Servico de agendamentos temporariamente indisponivel.");
+        appointmentsSource = [];
         table.setData([]);
+        optionsByField.clear();
+        buildOptionsMap([]).forEach((value, key) => optionsByField.set(key, value));
+        renderCategories();
+        renderOptions();
         updateNoResultsState();
       }
     }
 
-    searchInput.addEventListener("input", () => {
-      const term = searchInput.value.trim().toLowerCase();
-      if (!term) {
-        table.clearFilter();
-        noResults.style.display = "none";
-        return;
-      }
+    filterToggle.addEventListener("click", () => {
+      filterPanel.classList.toggle("open");
+      filterToggle.classList.toggle("active", filterPanel.classList.contains("open"));
+      filterToggle.textContent = filterPanel.classList.contains("open")
+        ? "- Ocultar filtros"
+        : "+ Adicionar filtro";
+    });
 
-      table.setFilter((rowData) => {
-        return [rowData.paciente, rowData.cpf, rowData.medico]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term));
-      });
-      updateNoResultsState();
+    optionSearchInput.addEventListener("input", () => {
+      renderOptions();
+    });
+
+    filterClearButton.addEventListener("click", () => {
+      clearAllFilters();
+    });
+
+    searchInput.addEventListener("input", () => {
+      applyFilters();
     });
 
     // Prevent Enter from triggering unintended browser requests/navigation.
@@ -121,6 +775,8 @@
       }
     });
 
+    renderCategories();
+    renderOptions();
     loadAppointments();
   </script>
 </body>
