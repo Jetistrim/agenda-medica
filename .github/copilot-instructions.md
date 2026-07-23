@@ -1,4 +1,4 @@
-# PADROES_DE_EXCELENCIA.md — Agenda Médica
+# copilot-instructions.md — Agenda Médica
 
 ---
 
@@ -77,12 +77,12 @@
 
 ## 5. Fase Atual e Comportamento Esperado da IA
 
-### **Fase Atual: Fase 1 — Contratos e MVP funcional [RIGOR: MÉDIO]**
+### **Fase Atual: Fase 2 — Testes e blindagem [RIGOR: ALTO] ✅ Concluída**
 
 #### Fase 0 — Descoberta e MVP lógico [RIGOR: BAIXO] ✅ Concluída
 **Critério de saída atingido:** lógica de login, busca de agendamentos e integração HTTP definidas e validadas.
 
-#### **Fase 1 — Contratos e arquitetura [RIGOR: MÉDIO] ← ATIVA**
+#### **Fase 1 — Contratos e arquitetura [RIGOR: MÉDIO] ✅ Concluída**
 **Foco da IA:** estrutura de camadas, tratamento de todos os cenários de falha, validação de entrada, logging.
 **A IA NÃO deve:** criar testes de integração complexos, focar em performance, adicionar funcionalidades além do escopo.
 **A IA DEVE:**
@@ -92,17 +92,17 @@
 - Logar todos os erros com campos mínimos: `timestamp`, `level`, `event`, `error_type`.
 
 **Critério de saída verificável:**
-- [ ] Todos os 6 cenários de falha da Parte 2 retornam resposta HTTP controlada (não 500 nu).
-- [ ] Nenhum `print()` em código de produção (usar `app.logger`).
-- [ ] `docker-compose up --build` sobe tudo sem erro.
-- [ ] Seed cria usuário de teste e banco na primeira execução.
+- [x] Todos os 6 cenários de falha da Parte 2 retornam resposta HTTP controlada (não 500 nu).
+- [x] Nenhum `print()` em código de produção (usar `app.logger`).
+- [x] `docker-compose up --build` sobe tudo sem erro.
+- [x] Seed cria usuário de teste e banco na primeira execução.
 
-#### Fase 2 — Testes e blindagem [RIGOR: ALTO] 🔲 Contrato
+#### **Fase 2 — Testes e blindagem [RIGOR: ALTO] ✅ Concluída**
 **Foco da IA:** cobertura de testes, mocks de HTTP e banco.
 **Critério de saída:**
-- [ ] `pytest` passa 100% dos testes.
-- [ ] Login válido, login inválido, retorno vazio da API e falha da API cobertos por teste.
-- [ ] Nenhum teste bate em SQLite real nem em HTTP real.
+- [x] `pytest` passa 100% dos testes.
+- [x] Login válido, login inválido, retorno vazio da API e falha da API cobertos por teste.
+- [x] Nenhum teste bate em SQLite real nem em HTTP real.
 
 #### Fase 3 — Produtização [RIGOR: MÁXIMO] 🔲 Contrato (fora do escopo deste desafio)
 
